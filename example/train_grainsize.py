@@ -7,7 +7,7 @@ from timeit import default_timer
 import torch
 import numpy as np
 
-from model import FNO2d
+from model_grainsize import FNO2d
 from utilities3 import count_params, LpLoss
 
 
@@ -216,7 +216,7 @@ def main(strainrate_path, temperature_path, grainsize_path, save_path):
 
     # define the model
     model = FNO2d(mode1, mode2, width).cuda()
-    print(model,model.parameters())
+    print(model,'\n',model.parameters())
     # define the optimizer and the scheduler
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step, gamma=scheduler_gamma)

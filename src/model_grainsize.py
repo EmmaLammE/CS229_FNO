@@ -138,7 +138,7 @@ class FNO2d(nn.Module):
 
         self.fc1 = nn.Linear(self.width, 300)
 
-    def forward(self, x , C1, C2, C3):
+    def forward(self, x , C1, C2):
         """ The forward propagation of neural network
 
         Parameters:
@@ -154,19 +154,19 @@ class FNO2d(nn.Module):
 
         C1 = torch.reshape(C1,[batchsize,1,size_x,size_y])
         C2 = torch.reshape(C2,[batchsize,1,size_x,size_y])
-        C3 = torch.reshape(C3,[batchsize,1,size_x,size_y])
+        #C3 = torch.reshape(C3,[batchsize,1,size_x,size_y])
 
         C1 = torch.nn.functional.normalize(C1)
         C2 = torch.nn.functional.normalize(C2)
-        C3 = torch.nn.functional.normalize(C3)
+        #C3 = torch.nn.functional.normalize(C3)
 
         C1 = torch.reshape(C1,[batchsize,size_x,size_y,1])
         C2 = torch.reshape(C2,[batchsize,size_x,size_y,1])
-        C3 = torch.reshape(C3,[batchsize,size_x,size_y,1])
+        #C3 = torch.reshape(C3,[batchsize,size_x,size_y,1])
 
         grid = self.get_grid(batchsize, size_x, size_y, x.device)
 
-        x = torch.cat((x, grid, C1, C2, C3), dim=-1)
+        x = torch.cat((x, grid, C1, C2), dim=-1)
         x = self.fc0(x)
         x = x.permute(0, 3, 1, 2)
 
