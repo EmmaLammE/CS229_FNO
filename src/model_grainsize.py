@@ -151,7 +151,7 @@ class FNO2d(nn.Module):
         batchsize = x.shape[0]
 
         size_x, size_y = x.shape[1], x.shape[2]
-
+        print("EL C1 shape ",C1.shape)
         C1 = torch.reshape(C1,[batchsize,1,size_x,size_y])
         C2 = torch.reshape(C2,[batchsize,1,size_x,size_y])
         #C3 = torch.reshape(C3,[batchsize,1,size_x,size_y])
