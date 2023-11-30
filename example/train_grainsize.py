@@ -38,15 +38,18 @@ def load_data(strainrate_path, temperature_path, grainsize_path, T_in, T_end,
 
     # Load the input data
     strainrate = np.load(strainrate_path)
+    # with np.load(strainrate_path) as data:
+    #     for key in data:
+    #         print(key)
     temperature = np.load(temperature_path)
 
     # Load the output data
     grainsize = np.load(grainsize_path)
 
     # convert to torch tensors
-    strainrate = torch.from_numpy(strainrate).float()
-    temperature = torch.from_numpy(temperature).float()
-    grainsize = torch.from_numpy(grainsize).float()
+    strainrate = torch.from_numpy(strainrate['arr_0']).float()
+    temperature = torch.from_numpy(temperature['arr_0']).float()
+    grainsize = torch.from_numpy(grainsize['arr_0']).float()
 
     # Expand the dimensions of the input data to match the output data (ns, nx, nz, 1)
     strainrate = strainrate.unsqueeze(-1)
@@ -56,46 +59,41 @@ def load_data(strainrate_path, temperature_path, grainsize_path, T_in, T_end,
     grainsize = grainsize.permute(0, 2, 3, 1)
 
     # split the data into training, validation and test sets in the ratio 80:10:10 randomly
-    random_index = np.random.permutation(vp.shape[0])
-    train_index = random_index[0:int(0.8 * vp.shape[0])]
-    valid_index = random_index[int(0.8 * vp.shape[0]):int(0.9 * vp.shape[0])]
-    test_index = random_index[int(0.9 * vp.shape[0]):]
+    random_index = np.random.permutation(strainrate.shape[0])
+    train_index = random_index[0:int(0.8 * strainrate.shape[0])]
+    valid_index = random_index[int(0.8 * strainrate.shape[0]):int(0.9 * strainrate.shape[0])]
+    test_index = random_index[int(0.9 * strainrate.shape[0]):]
 
     # train data
-    vp_train = vp[train_index, :, :, :]
-    vs_train = vs[train_index, :, :, :]
-    rho_train = rho[train_index, :, :, :]
-    vx_train = vx[train_index, :, :, :]
+    strainrate_train = strainrate[train_index, :, :, :]
+    temperature_train = temperature[train_index, :, :, :]
+    grainsize_train = grainsize[train_index, :, :, :]
 
     # validation data
-    vp_valid = vp[valid_index, :, :, :]
-    vs_valid = vs[valid_index, :, :, :]
-    rho_valid = rho[valid_index, :, :, :]
-    vx_valid = vx[valid_index, :, :, :]
+    strainrate_valid = strainrate[valid_index, :, :, :]
+    temperature_valid = temperature[valid_index, :, :, :]
+    grainsize_valid = grainsize[valid_index, :, :, :]
 
     # test data
-    vp_test = vp[test_index, :, :, :]
-    vs_test = vs[test_index, :, :, :]
-    rho_test = rho[test_index, :, :, :]
-    vx_test = vx[test_index, :, :, :]
+    strainrate_test = strainrate[test_index, :, :, :]
+    temperature_test = temperature[test_index, :, :, :]
+    grainsize_test = grainsize[test_index, :, :, :]
 
     # split the time steps
-    vx_train_a = vx_train[:, :, :, 0:T_in]
-    vx_train_u = vx_train[:, :, :, T_in:T_end]
-    vx_valid_a = vx_valid[:, :, :, 0:T_in]
-    vx_valid_u = vx_valid[:, :, :, T_in:T_end]
+    grainsize_train_a = grainsize_train[:, :, :, 0:T_in]
+    grainsize_train_u = grainsize_train[:, :, :, T_in:T_end]
+    grainsize_valid_a = grainsize_valid[:, :, :, 0:T_in]
+    grainsize_valid_u = grainsize_valid[:, :, :, T_in:T_end]
 
     print("Information about the data:")
-    print("Shape of vp_train   : ", vp_train.shape)
-    print("Shape of vs_train   : ", vs_train.shape)
-    print("Shape of rho_train  : ", rho_train.shape)
-    print("Shape of vx_train_a : ", vx_train_a.shape)
-    print("Shape of vx_train_u : ", vx_train_u.shape)
-    print("Shape of vp_valid   : ", vp_valid.shape)
-    print("Shape of vs_valid   : ", vs_valid.shape)
-    print("Shape of rho_valid  : ", rho_valid.shape)
-    print("Shape of vx_train_a : ", vx_valid_a.shape)
-    print("Shape of vx_valid_u : ", vx_valid_u.shape)
+    print("Shape of strainrate_train   : ", strainrate_train.shape)
+    print("Shape of temperature_train   : ", temperature_train.shape)
+    print("Shape of grainsize_train_a : ", grainsize_train_a.shape)
+    print("Shape of grainsize_train_u : ", grainsize_train_u.shape)
+    print("Shape of strainrate_valid   : ", strainrate_valid.shape)
+    print("Shape of temperature_valid   : ", temperature_valid.shape)
+    print("Shape of grainsize_train_a : ", grainsize_valid_a.shape)
+    print("Shape of grainsize_valid_u : ", grainsize_valid_u.shape)
 
     # # save data to disk
     # for data, path in zip([vp_train, vs_train, rho_train, vx_train], [vp_path, vs_path, rho_path, vx_path, vx_path]):
@@ -104,16 +102,16 @@ def load_data(strainrate_path, temperature_path, grainsize_path, T_in, T_end,
     # for data, path in zip([vp_valid, vs_valid, rho_valid, vx_valid], [vp_path, vs_path, rho_path, vx_path, vx_path]):
     #     torch.save(data,  path.replace('.npy', '_valid.pt'))
 
-    for data, path in zip([vp_test, vs_test, rho_test, vx_test], [vp_path, vs_path, rho_path, vx_path, vx_path]):
+    for data, path in zip([strainrate_test, temperature_test, grainsize_test], [strainrate_path, temperature_path, grainsize_path, grainsize_path]):
         torch.save(data,  path.replace('.npy', '_test.pt'))
 
     # create the train and test loaders
     train_loader = torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(vx_train_a, vx_train_u, vp_train, vs_train, rho_train), 
+        torch.utils.data.TensorDataset(grainsize_train_a, grainsize_train_u, temperature_train, strainrate_train), 
         batch_size = batch_size, shuffle=shuffle)
     
     valid_loader  = torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(vx_valid_a, vx_valid_u, vp_valid, vs_valid, rho_valid),
+        torch.utils.data.TensorDataset(grainsize_valid_a, grainsize_valid_u, temperature_valid, strainrate_valid),
         batch_size = batch_size, shuffle=shuffle)
 
     return train_loader, valid_loader
@@ -190,7 +188,7 @@ def train(model, train_loader, valid_loader, optimizer, scheduler,
     return train_loss, test_loss
 
 
-def main(vp_path, vs_path, rho_path, vx_path, save_path):
+def main(strainrate_path, temperature_path, grainsize_path, save_path):
     """ Train the model using the given data
     """
 
@@ -200,8 +198,8 @@ def main(vp_path, vs_path, rho_path, vx_path, save_path):
     scheduler_step  = 30
     scheduler_gamma = 0.1
     sub             = 1
-    T_in            = 50
-    T_end           = 350
+    T_in            = 40
+    T_end           = 50
     S               = 64
     batch_size      = 256
     mode1           = 12
@@ -214,8 +212,8 @@ def main(vp_path, vs_path, rho_path, vx_path, save_path):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # load the data
-    train_loader, valid_loader = load_data(vp_path, vs_path, rho_path, 
-                                          vx_path, T_in, T_end, 
+    train_loader, valid_loader = load_data(strainrate_path, temperature_path,
+                                          grainsize_path, T_in, T_end, 
                                           batch_size, True)
 
     # define the model
@@ -242,11 +240,10 @@ def main(vp_path, vs_path, rho_path, vx_path, save_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train the model')
-    parser.add_argument('--vp_path', type=str, default='data/vp.npy', help='Path to the vp data')
-    parser.add_argument('--vs_path', type=str, default='data/vs.npy', help='Path to the vs data')
-    parser.add_argument('--rho_path', type=str, default='data/rho.npy', help='Path to the rho data')
-    parser.add_argument('--vx_path', type=str, default='data/vx.npy', help='Path to the vx data')
+    parser.add_argument('--strainrate_path', type=str, default='data/strainrate_traindata.npy.npz', help='Path to the strain rate data')
+    parser.add_argument('--temperature_path', type=str, default='data/temperature_traindata.npy.npz', help='Path to the temperature data')
+    parser.add_argument('--grainsize_path', type=str, default='data/grainsize_traindata.npy.npz', help='Path to the grainsize data')
     parser.add_argument('--save_path', type=str, default='model.pth', help='Path to save the model')
     args = parser.parse_args()
 
-    main(args.vp_path, args.vs_path, args.rho_path, args.vx_path, args.save_path)
+    main(args.strainrate_path, args.temperature_path, args.grainsize_path, args.save_path)
