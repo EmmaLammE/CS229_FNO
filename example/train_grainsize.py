@@ -131,18 +131,17 @@ def train(model, train_loader, valid_loader, optimizer, scheduler,
         t1 = default_timer()
         train_l2_step_training = 0
         test_l2_step_testing = 0
-        for xx, yy, C1, C2, C3 in train_loader:
+        for xx, yy, C1, C2 in train_loader:
 
             loss = 0
             xx = xx.to(device)
             yy = yy.to(device)
             C1 = C1.to(device)
             C2 = C2.to(device)
-            C3 = C3.to(device)
 
             for t in range(0, (T_end - T_in),step):
                 y = yy[..., t:t + step]
-                im_train = model(xx,C1,C2,C3)
+                im_train = model(xx,C1,C2)
                 loss += myloss(im_train.reshape(batch_size, -1), y.reshape(batch_size, -1))
                 if t == 0:
                     pred = im_train
@@ -159,17 +158,16 @@ def train(model, train_loader, valid_loader, optimizer, scheduler,
             train_loss[ep] = train_l2_step_training
         
         with torch.no_grad():
-            for xx, yy, C1, C2, C3 in valid_loader:
+            for xx, yy, C1, C2 in valid_loader:
                 loss = 0
                 xx = xx.to(device)
                 yy = yy.to(device)
                 C1 = C1.to(device)
                 C2 = C2.to(device)
-                C3 = C3.to(device)
 
                 for t in range(0, (T_end - T_in),step):
                     y = yy[..., t:t + step]
-                    im_test = model(xx,C1,C2,C3)
+                    im_test = model(xx,C1,C2)
                     loss += myloss(im_test.reshape(batch_size, -1), y.reshape(batch_size, -1))
                     if t == 0:
                         pred = im_test
@@ -218,7 +216,7 @@ def main(strainrate_path, temperature_path, grainsize_path, save_path):
 
     # define the model
     model = FNO2d(mode1, mode2, width).cuda()
-
+    print(model,model.parameters())
     # define the optimizer and the scheduler
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step, gamma=scheduler_gamma)
