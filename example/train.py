@@ -149,7 +149,12 @@ def train(model, train_loader, valid_loader, optimizer, scheduler,
             for t in range(0, (T_end - T_in),step):
                 y = yy[..., t:t + step]
                 im_train = model(xx,C1,C2,C3)
+                print("EL loss shape ",loss)
+                print("EL batch_size shape ",batch_size)
+                print("EL im_train shape ",im_train.shape)
+                print("EL y shape ",y.shape)
                 loss += myloss(im_train.reshape(batch_size, -1), y.reshape(batch_size, -1))
+                exit(1)
                 if t == 0:
                     pred = im_train
                 else:

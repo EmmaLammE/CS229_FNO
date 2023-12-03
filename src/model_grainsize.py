@@ -90,7 +90,7 @@ class SpectralConv2d_fast(nn.Module):
 
 
 class FNO2d(nn.Module):
-    def __init__(self, modes1, modes2, width):
+    def __init__(self, modes1, modes2, width,num_timesteps,size_of_grainsize_train_u,num_inputparams=2):
         """
         The overall network. It contains 4 layers of the Fourier layer.
         1. Lift the input to the desire channel dimension by self.fc0 .
@@ -109,7 +109,11 @@ class FNO2d(nn.Module):
         self.modes1 = modes1
         self.modes2 = modes2
         self.width = width
-        self.fc0 = nn.Linear((50+5), self.width)
+        self.num_timesteps = num_timesteps
+        self.num_inputparams = num_inputparams
+        self.size_of_grainsize_train_u=size_of_grainsize_train_u
+        # 2 is the size of 4th dimension of grid
+        self.fc0 = nn.Linear((num_timesteps+num_inputparams+2), self.width)
         # input channel is 12: the solution of the previous 10 timesteps + 2 locations (u(t-10, x, y), ..., u(t-1, x, y),  x, y)
 
         self.conv0 = SpectralConv2d_fast(self.width, self.width, self.modes1, self.modes2)
@@ -136,7 +140,7 @@ class FNO2d(nn.Module):
         self.bn5 = torch.nn.BatchNorm2d(self.width)
         self.bn6 = torch.nn.BatchNorm2d(self.width)
 
-        self.fc1 = nn.Linear(self.width, 300)
+        self.fc1 = nn.Linear(self.width,size_of_grainsize_train_u)
 
     def forward(self, x , C1, C2):
         """ The forward propagation of neural network
@@ -151,7 +155,7 @@ class FNO2d(nn.Module):
         batchsize = x.shape[0]
 
         size_x, size_y = x.shape[1], x.shape[2]
-        print("EL C1 shape ",C1.shape)
+        # print("EL C1 shape ",C1.shape)
         C1 = torch.reshape(C1,[batchsize,1,size_x,size_y])
         C2 = torch.reshape(C2,[batchsize,1,size_x,size_y])
         #C3 = torch.reshape(C3,[batchsize,1,size_x,size_y])
@@ -165,8 +169,12 @@ class FNO2d(nn.Module):
         #C3 = torch.reshape(C3,[batchsize,size_x,size_y,1])
 
         grid = self.get_grid(batchsize, size_x, size_y, x.device)
-
+        # print("EL x shape ",x.shape)
+        # print("EL grid shape ",grid.shape)
+        # print("EL C1 shape ",C1.shape)
+        # print("EL C2 shape ",C2.shape)
         x = torch.cat((x, grid, C1, C2), dim=-1)
+        # print("EL x shape ",x.shape)
         x = self.fc0(x)
         x = x.permute(0, 3, 1, 2)
 

@@ -165,7 +165,6 @@ class FNO2d(nn.Module):
         C3 = torch.reshape(C3,[batchsize,size_x,size_y,1])
 
         grid = self.get_grid(batchsize, size_x, size_y, x.device)
-
         x = torch.cat((x, grid, C1, C2, C3), dim=-1)
         x = self.fc0(x)
         x = x.permute(0, 3, 1, 2)

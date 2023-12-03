@@ -142,6 +142,10 @@ def train(model, train_loader, valid_loader, optimizer, scheduler,
             for t in range(0, (T_end - T_in),step):
                 y = yy[..., t:t + step]
                 im_train = model(xx,C1,C2)
+                # print("EL loss shape ",loss)
+                # print("EL batch_size shape ",batch_size)
+                # print("EL im_train shape ",im_train.shape)
+                # print("EL y shape ",y.shape)
                 loss += myloss(im_train.reshape(batch_size, -1), y.reshape(batch_size, -1))
                 if t == 0:
                     pred = im_train
@@ -199,7 +203,7 @@ def main(strainrate_path, temperature_path, grainsize_path, save_path):
     T_in            = 40
     T_end           = 50
     S               = 64
-    batch_size      = 256
+    batch_size      = 250
     mode1           = 12
     mode2           = 12
     width           = 15
@@ -215,8 +219,14 @@ def main(strainrate_path, temperature_path, grainsize_path, save_path):
                                           batch_size, True)
 
     # define the model
-    model = FNO2d(mode1, mode2, width).cuda()
-    print(model,'\n',model.parameters())
+    # print("EL debug train_loader ",train_loader)
+    dataset = train_loader.dataset
+    grainsize_train_u_tensor = dataset.tensors[1]
+    size_of_grainsize_train_u = grainsize_train_u_tensor.shape
+    # print("EL debug size_of_grainsize_train_u ",size_of_grainsize_train_u[3])
+    size_of_grainsize_train_u=size_of_grainsize_train_u[3]
+    model = FNO2d(mode1, mode2, width,T_in,size_of_grainsize_train_u,num_inputparams=2).cuda()
+    # print(model,'\n',model.parameters())
     # define the optimizer and the scheduler
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step, gamma=scheduler_gamma)
