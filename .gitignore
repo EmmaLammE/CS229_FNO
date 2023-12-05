@@ -161,4 +161,4 @@ cython_debug/
 
 # np data
 *.npy
-*.pt
+*.pt.npz

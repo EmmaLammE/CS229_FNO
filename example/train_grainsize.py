@@ -62,12 +62,13 @@ def load_data(strainrate_path, temperature_path, grainsize_path, T_in, T_end,
     random_index = np.random.permutation(strainrate.shape[0])
     train_index = random_index[0:int(0.8 * strainrate.shape[0])]
     valid_index = random_index[int(0.8 * strainrate.shape[0]):int(0.9 * strainrate.shape[0])]
-    test_index = random_index[int(0.9 * strainrate.shape[0]):]
-
+    test_index  = random_index[int(0.9 * strainrate.shape[0]):]
+    print("EL strainrate.shape[0] ",strainrate.shape[0])
+    print("EL train_index ",train_index)
     # train data
-    strainrate_train = strainrate[train_index, :, :, :]
+    strainrate_train  = strainrate[train_index, :, :, :]
     temperature_train = temperature[train_index, :, :, :]
-    grainsize_train = grainsize[train_index, :, :, :]
+    grainsize_train   = grainsize[train_index, :, :, :]
 
     # validation data
     strainrate_valid = strainrate[valid_index, :, :, :]
@@ -86,14 +87,14 @@ def load_data(strainrate_path, temperature_path, grainsize_path, T_in, T_end,
     grainsize_valid_u = grainsize_valid[:, :, :, T_in:T_end]
 
     print("Information about the data:")
-    print("Shape of strainrate_train   : ", strainrate_train.shape)
+    print("Shape of strainrate_train    : ", strainrate_train.shape)
     print("Shape of temperature_train   : ", temperature_train.shape)
-    print("Shape of grainsize_train_a : ", grainsize_train_a.shape)
-    print("Shape of grainsize_train_u : ", grainsize_train_u.shape)
-    print("Shape of strainrate_valid   : ", strainrate_valid.shape)
+    print("Shape of grainsize_train_a   : ", grainsize_train_a.shape)
+    print("Shape of grainsize_train_u   : ", grainsize_train_u.shape)
+    print("Shape of strainrate_valid    : ", strainrate_valid.shape)
     print("Shape of temperature_valid   : ", temperature_valid.shape)
-    print("Shape of grainsize_train_a : ", grainsize_valid_a.shape)
-    print("Shape of grainsize_valid_u : ", grainsize_valid_u.shape)
+    print("Shape of grainsize_train_a   : ", grainsize_valid_a.shape)
+    print("Shape of grainsize_valid_u   : ", grainsize_valid_u.shape)
 
     # # save data to disk
     # for data, path in zip([vp_train, vs_train, rho_train, vx_train], [vp_path, vs_path, rho_path, vx_path, vx_path]):
@@ -120,8 +121,8 @@ def load_data(strainrate_path, temperature_path, grainsize_path, T_in, T_end,
 def train(model, train_loader, valid_loader, optimizer, scheduler, 
           myloss, costFunc, epoch, device, T_in, T_end, step, batch_size):
 
-    print(f"\nThe model has {count_params(model)} trainable parameters\n")
-    print(f"Training the model on {device} for {epoch} epoch ...\n")
+    # print(f"\nThe model has {count_params(model)} trainable parameters\n")
+    # print(f"Training the model on {device} for {epoch} epoch ...\n")
 
     train_loss = torch.zeros(epoch)
     test_loss  = torch.zeros(epoch)
@@ -185,12 +186,13 @@ def train(model, train_loader, valid_loader, optimizer, scheduler,
 
         t2 = default_timer()
         #scheduler.step()
-        print(f"current epoch {ep: 6d}, time {t2 -t1 :.2f}s, train loss {train_l2_step_training :.4e}, valid loss {test_l2_step_testing :.4e}")
+        print("current epoch ",ep,", time ",t2 -t1, ", train loss ",train_l2_step_training,", valid loss: ",test_l2_step_testing)
+        # print(f"current epoch {ep: 6d}, time {t2 -t1 :.2f}s, train loss {train_l2_step_training :.4e}, valid loss {test_l2_step_testing :.4e}")
 
     return train_loss, test_loss
 
 
-def main(strainrate_path, temperature_path, grainsize_path, save_path):
+def main(strainrate_path, temperature_path, grainsize_path, save_path,learn_step,total_step):
     """ Train the model using the given data
     """
 
@@ -200,8 +202,8 @@ def main(strainrate_path, temperature_path, grainsize_path, save_path):
     scheduler_step  = 30
     scheduler_gamma = 0.1
     sub             = 1
-    T_in            = 40
-    T_end           = 50
+    T_in            = learn_step
+    T_end           = total_step
     S               = 64
     batch_size      = 250
     mode1           = 12
@@ -212,7 +214,10 @@ def main(strainrate_path, temperature_path, grainsize_path, save_path):
  
     # define the device for training (only on one GPU if available)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+    # if torch.cuda.is_available():
+    #     torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    # else:
+    #     torch.set_default_tensor_type('torch.FloatTensor')
     # load the data
     train_loader, valid_loader = load_data(strainrate_path, temperature_path,
                                           grainsize_path, T_in, T_end, 
@@ -252,6 +257,8 @@ if __name__ == "__main__":
     parser.add_argument('--temperature_path', type=str, default='data/temperature_traindata.npy.npz', help='Path to the temperature data')
     parser.add_argument('--grainsize_path', type=str, default='data/grainsize_traindata.npy.npz', help='Path to the grainsize data')
     parser.add_argument('--save_path', type=str, default='model.pth', help='Path to save the model')
+    parser.add_argument('--learn_step',type=int,default=10,help='The step before which FNO uses to learn')
+    parser.add_argument('--total_step',type=int,default=20,help='The total step. total_step-learn_step=predict_step')
     args = parser.parse_args()
 
-    main(args.strainrate_path, args.temperature_path, args.grainsize_path, args.save_path)
+    main(args.strainrate_path, args.temperature_path, args.grainsize_path, args.save_path,args.learn_step,args.total_step)

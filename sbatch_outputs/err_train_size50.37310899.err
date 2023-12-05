@@ -1,0 +1,4 @@
+  File "train_grainsize.py", line 123
+    print(f"\nThe model has {count_params(model)} trainable parameters\n")
+                                                                        ^
+SyntaxError: invalid syntax

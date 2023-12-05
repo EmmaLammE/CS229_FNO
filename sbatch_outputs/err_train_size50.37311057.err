@@ -1,0 +1,4 @@
+  File "train_grainsize.py", line 188
+    print(f"current epoch {ep: 6d}, time {t2 -t1 :.2f}s, train loss {train_l2_step_training :.4e}, valid loss {test_l2_step_testing :.4e}")
+                                                                                                                                         ^
+SyntaxError: invalid syntax
