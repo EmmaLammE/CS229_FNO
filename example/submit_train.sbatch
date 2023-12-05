@@ -20,6 +20,6 @@ ml py-h5py/3.7.0_py39
 python3 train_grainsize.py --strainrate_path  ./../data/strainrate_traindata.npy.npz \
                 --temperature_path  ./../data/temperature_traindata.npy.npz \
                 --grainsize_path  ./../data/grainsize_traindata.npy.npz \
-                --save_path ./../model/model_grainsize_ns50_nt10_50 \
-                --learn_step 10 \
+                --save_path ./../model/model_grainsize_ns50_nt25_50 \
+                --learn_step 25 \
                 --total_step 50
